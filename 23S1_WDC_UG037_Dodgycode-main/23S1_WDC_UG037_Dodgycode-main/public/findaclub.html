@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Find a Club</title>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+    <script src="javascripts/vue.js" defer></script>
+    <script src="javascripts/navbar.js"></script>
+    <script src="javascripts/search_bar.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <link rel="stylesheet" href="stylesheets/style.css">
+</head>
+<body>
+    <div id="app">
+        <navigation-bar></navigation-bar>
+        <div class="findaclub-top">
+            <h1>Find a Club</h1>
+            <div class="search-bar">
+                <input type="text" v-model="clubSearchQuery" placeholder="Search clubs...">
+            </div>
+        </div>
+        <hr class="line-break">
+        <div class="club-grid">
+            <div class="club" v-for="club in filteredClubs" :key="club.club_id">
+                <a v-bind:href="`/club.html?id=${club.club_id}`" v-on:click="getClubData(club.club_id)">
+                    <div class="content">
+                        <img src="images/club_placeholder.png" v-bind:alt="club.name"/>
+                        <div class="club-info">
+                            <h2>{{ club.name }}</h2>
+                            <p>{{ club.description }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <footer>
+        ©2023 DODGYCODE LTD. All Rights Reserved.
+        <br>
+        <br>
+        <div class="footer-links">
+            <a href="#">Terms of Service &nbsp; &#x2022; &nbsp; </a>
+            <a href="#">Privacy Policy &nbsp; &#x2022; &nbsp; </a>
+            <a href="#">Help and Support &nbsp; &nbsp; </a>
+            <a href="https://www.instagram.com/?__coig_restricted=1" class="fab fa-facebook social-icon">&nbsp; </a>
+            <a href="https://www.facebook.com/" class="fab fa-instagram social-icon">&nbsp; </a>
+            <a href="https://support.google.com" class="fab fa-google social-icon">&nbsp; </a>
+        </div>
+    </footer>
+</body>
+</html>

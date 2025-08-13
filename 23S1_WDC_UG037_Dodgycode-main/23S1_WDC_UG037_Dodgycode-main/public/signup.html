@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Sign up</title>
+        <meta charset="UTF-8">
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+        <script src="javascripts/vue.js" defer></script>
+        <script src="javascripts/navbar.js"></script>
+        <link rel="stylesheet" href="stylesheets/style.css">
+    </head>
+    <body>
+        <div id="app">
+            <navigation-bar></navigation-bar>
+            <h1>Sign up</h1>
+            <div class="login">
+                <form v-on:submit.prevent="signup">
+                    <div class="field-group">
+                        <label for="username">Username</label>
+                        <input type="text" v-model="username" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="email">Email</label>
+                        <input type="text" v-model="email" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="email">First name</label>
+                        <input type="text" v-model="firstname" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="email">Last name</label>
+                        <input type="text" v-model="lastname" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="password">Password</label>
+                        <input type="password" v-model="password" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="password">Confirm password</label>
+                        <input type="password" v-model="confirm_password" required>
+                    </div>
+                    <div id="reg">
+                        <button type="submit">Register</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <footer>
+            ©2023 DODGYCODE LTD. All Rights Reserved.
+            <br>
+            <br>
+            <div class="footer-links">
+                <a href="#">Terms of Service &nbsp; &#x2022; &nbsp; </a>
+                <a href="#">Privacy Policy &nbsp; &#x2022; &nbsp; </a>
+                <a href="#">Help and Support &nbsp; &nbsp; </a>
+                <a href="https://www.instagram.com/?__coig_restricted=1" class="fab fa-facebook social-icon">&nbsp; </a>
+                <a href="https://www.facebook.com/" class="fab fa-instagram social-icon">&nbsp; </a>
+                <a href="https://support.google.com" class="fab fa-google social-icon">&nbsp; </a>
+            </div>
+        </footer>
+    </body>
+</html>

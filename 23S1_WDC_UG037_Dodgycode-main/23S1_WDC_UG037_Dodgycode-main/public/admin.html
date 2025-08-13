@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Admin</title>
+        <meta charset="UTF-8">
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+        <script src="javascripts/vue.js" defer></script>
+        <script src="javascripts/navbar.js"></script>
+        <link rel="stylesheet" href="stylesheets/style.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    </head>
+    <body>
+        <div id="app">
+            <navigation-bar></navigation-bar>
+            <div id="profile_heading">
+                <h1>Admin</h1>
+            </div>
+            <div id="admin">
+                <div id="admin-users">
+                    <h2>Users</h2>
+                    <div id="user-list">
+                        <ul>
+                            <li v-for="user in users">{{ user.username }} (id: {{ user.user_id }})
+                                <button type="button" v-if="!user.isAdmin" @click="makeAdmin(user.user_id)">Make Admin</button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="admin-clubs">
+                    <h2>Clubs</h2>
+                    <div id="club-list">
+                        <ul>
+                            <li v-for="club in clubs">{{ club.name }} (id: {{ club.club_id }})</li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="create-club-form">
+                    <h2>Create a new club</h2>
+                    <form @submit.prevent="createClub">
+                        <label for="club-name">Club name:</label>
+                        <input id="club-name" v-model="newClub.name" type="text" required>
+                        <br>
+                        <label for="club-description">Club description:</label>
+                        <textarea id="club-description" v-model="newClub.description"></textarea>
+                        <br>
+                        <br>
+                        <button type="submit">Create Club</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            ©2023 DODGYCODE LTD. All Rights Reserved.
+            <br>
+            <br>
+            <div class="footer-links">
+                <a href="#">Terms of Service &nbsp; &nbsp; </a>
+                <a href="#">Privacy Policy &nbsp; &nbsp; </a>
+                <a href="#">Help and Support &nbsp; &nbsp; </a>
+                <a href="https://www.instagram.com/?__coig_restricted=1" class="fab fa-facebook social-icon">&nbsp; </a>
+                <a href="https://www.facebook.com/" class="fab fa-instagram social-icon">&nbsp; </a>
+                <a href="https://support.google.com" class="fab fa-google social-icon">&nbsp; </a>
+            </div>
+        </footer>
+    </body>
+</html>

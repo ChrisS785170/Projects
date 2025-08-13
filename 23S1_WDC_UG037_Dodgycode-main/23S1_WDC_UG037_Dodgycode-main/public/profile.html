@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Profile</title>
+        <meta charset="UTF-8">
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+        <script src="javascripts/vue.js" defer></script>
+        <script src="javascripts/navbar.js"></script>
+        <link rel="stylesheet" href="stylesheets/style.css">
+    </head>
+    <body>
+        <div id="app">
+            <navigation-bar></navigation-bar>
+            <div id="profile_heading">
+                <h1>My Profile</h1>
+            </div>
+            <div id="profile_information">
+                <div class="profile-field">
+                    <span class="field-label">First Name:</span>
+                    <span class="field-value" v-if="!editFirstname">{{ user.firstname }}</span>
+                    <input type="text" v-else v-model="user.firstname">
+                    <button class="edit-button" type="button" @click="editFirstname = !editFirstname; updateUserfirst();">
+                        <span v-if="!editFirstname">Edit</span>
+                        <span v-else>Confirm</span>
+                    </button>
+                </div>
+                <div class="profile-field">
+                    <span class="field-label">Last Name:</span>
+                    <span class="field-value" v-if="!editLastname">{{ user.lastname }}</span>
+                    <input type="text" v-else v-model="user.lastname">
+                    <button class="edit-button" type="button" @click="editLastname = !editLastname; updateUserlast();">
+                        <span v-if="!editLastname">Edit</span>
+                        <span v-else>Confirm</span>
+                    </button>
+                </div>
+                <div class="profile-field">
+                    <span class="field-label">Username:</span>
+                    <span class="field-value" v-if="!editUsername">{{ user.username }}</span>
+                    <input type="text" v-else v-model="user.username">
+                    <button class="edit-button" type="button" @click="editUsername = !editUsername; updateUsername(); ">
+                        <span v-if="!editUsername">Edit</span>
+                        <span v-else>Confirm</span>
+                    </button>
+                </div>
+                <div class="profile-field">
+                    <span class="field-label">Email:</span>
+                    <span class="field-value">{{ user.email }}</span>
+                </div>
+            </div>
+            <div id="clubs_section">
+                <h2>I am a member of:</h2>
+                <ul>
+                    <li v-for="club in profileClubs" :key="club.club_id" class ="profileClubs">{{ club.name }}</li>
+                </ul>
+            </div>
+        </div>
+        <footer>
+            ©2023 DODGYCODE LTD. All Rights Reserved.
+            <br>
+            <br>
+            <div class="footer-links">
+                <a href="#">Terms of Service &nbsp; &#x2022; &nbsp; </a>
+                <a href="#">Privacy Policy &nbsp; &#x2022; &nbsp; </a>
+                <a href="#">Help and Support &nbsp; &nbsp; </a>
+                <a href="https://www.instagram.com/?__coig_restricted=1" class="fab fa-facebook social-icon">&nbsp; </a>
+                <a href="https://www.facebook.com/" class="fab fa-instagram social-icon">&nbsp; </a>
+                <a href="https://support.google.com" class="fab fa-google social-icon">&nbsp; </a>
+            </div>
+        </footer>
+    </body>
+</html>

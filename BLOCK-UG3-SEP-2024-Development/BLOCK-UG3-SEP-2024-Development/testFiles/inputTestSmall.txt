@@ -1,0 +1,27 @@
+8,8,2,2,2,1
+o, sea
+t, TAS
+w, WA
+n, NT
+s, SA
+q, QLD
+e, NSW
+v, VIC
+
+oooooooo
+ottotott
+ttwwwwtt
+nnssqqee
+vvveeevv
+qqqvvvee
+ssssooot
+tttoottt
+
+ooonnoow
+ottovvee
+ttwwwwtt
+nnwwwwqq
+vvwwwwsv
+qqwwwwee
+ssssooot
+tttooqqt
