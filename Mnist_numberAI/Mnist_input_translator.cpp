@@ -13,8 +13,6 @@ using namespace std;
 */
 
 
-
-
 //so we want to convert the training images from the mnist dataset into
 //an array of images, these images are 784 pixels 28x28, with colours from 0-255
 // we want to have an array with images with colour ranges from 0-1 and labels which hold the value the images shows
@@ -55,7 +53,7 @@ vector<int> convert_label_data(string file_name){
     vector<int> raw_data;
 
     while (file.read(reinterpret_cast<char*>(&byte), 1)) {
-        if (count > 15){
+        if (count > 7){
             raw_data.push_back(static_cast<int>(byte));
         }
         else{
@@ -67,7 +65,7 @@ vector<int> convert_label_data(string file_name){
 }
 
 
-int main(){
+int setup(){
     // intialise all data containers
     vector<float> train_data;
     vector<float> test_data;
@@ -84,12 +82,6 @@ int main(){
     test_data = convert_image_data(test_images_file_name);
     train_labels = convert_label_data(train_labels_file_name);
     test_labels = convert_label_data(test_labels_file_name);
-
-
-
-
-
-
 
 
     return 0;
