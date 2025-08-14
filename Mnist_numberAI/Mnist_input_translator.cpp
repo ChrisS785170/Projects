@@ -17,7 +17,12 @@ using namespace std;
 //an array of images, these images are 784 pixels 28x28, with colours from 0-255
 // we want to have an array with images with colour ranges from 0-1 and labels which hold the value the images shows
 
-
+struct Dataset {
+    vector<float> train_data;
+    vector<float> test_data;
+    vector<int>  train_labels;
+    vector<int> test_labels;
+};
 
 vector<float> convert_image_data(string file_name){
 
@@ -65,7 +70,9 @@ vector<int> convert_label_data(string file_name){
 }
 
 
-int setup(){
+Dataset data_setup(){
+    Dataset ds;
+
     // intialise all data containers
     vector<float> train_data;
     vector<float> test_data;
@@ -78,11 +85,11 @@ int setup(){
     string test_labels_file_name ="Mnist_data/Test_data/t10k-labels.idx1-ubyte";
 
 
-    train_data = convert_image_data(train_images_file_name);
-    test_data = convert_image_data(test_images_file_name);
-    train_labels = convert_label_data(train_labels_file_name);
-    test_labels = convert_label_data(test_labels_file_name);
+    ds.train_data = convert_image_data(train_images_file_name);
+    ds.test_data = convert_image_data(test_images_file_name);
+    ds.train_labels = convert_label_data(train_labels_file_name);
+    ds.test_labels = convert_label_data(test_labels_file_name);
 
 
-    return 0;
+    return ds;
 }
