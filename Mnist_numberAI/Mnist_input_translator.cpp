@@ -58,7 +58,7 @@ vector<int> convert_label_data(string file_name){
     vector<int> raw_data;
 
     while (file.read(reinterpret_cast<char*>(&byte), 1)) {
-        if (count > 7){
+        if (count > 7){ // the header file for the labels is only 8 values long 
             raw_data.push_back(static_cast<int>(byte));
         }
         else{

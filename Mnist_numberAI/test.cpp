@@ -2,16 +2,18 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <cstdlib>
+#include <ctime>
+
 
 using namespace std;
 
 
 int main(){
+    srand(time(0));
+    float num = rand() %201;
 
-
-    float num = 243;
-
-    num = num/255;
+    num = (num-100)/100;
 
     cout <<num<< "\n";
 
