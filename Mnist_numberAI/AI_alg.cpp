@@ -55,22 +55,7 @@ void Heintialisation( vector<vector<vector<float>>> &weights ){
 
 }
 
-/*
-float Randomweight(){ // return a random number between -1 and 1, for intialising weights 
-    srand(time(0));
-    float num = rand()%201;
-    num = (num - 100)/100;
 
-    return num;
-
-}
-
-float RandomBias(){
-    srand(time(0));
-    float num = rand()%2;
-    return num; 
-}
-*/
 Model intialisation(vector<int> layer_sizes, string intialisation_alg ){
     Model AI;
     
@@ -98,8 +83,11 @@ Model intialisation(vector<int> layer_sizes, string intialisation_alg ){
     return AI;
 }
 
-int trainAI(){
+int trainAI(){ // parameters would be layers and specificed alg 
 
+
+    // intialisation
+    ////////////////////////////////////////////////////
     int input_layer_size = 784; // 28x28 image size
     vector<int> hidden_layer_size (2,16);
     int number_of_hidden_layers = 2;
@@ -114,6 +102,21 @@ int trainAI(){
     Dataset ds;
     ds = data_setup();
     Model AI = intialisation( layer_size, "default");
+    
+    ///////////////////////////////////////////////////
+
+    //Training
+    ///////////////////////////////////////////////////
+    int  train_dataset_size = ds.train_data / 784 // 784 is the size of each image 28x28 pixels
+
+    for (int i = 0; i < train_dataset_size; i++){ // should be 60000 for Mnist dataset
+
+        // need to calculate activation of each layer - > softmax output layer - > calulate cost -> calculate error -> backpropagate
+    }
+
+
+
+    ///////////////////////////////////////////////////
 
 
     return 0;
