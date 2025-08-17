@@ -71,26 +71,29 @@ float RandomBias(){
     return num; 
 }
 */
-Model intialisation(int number_of_hidden_layers, int input_layer_size , int hidden_layer_size , int output_layer_size, string intialisation_alg ){
+Model intialisation(vector<int> layer_sizes, string intialisation_alg ){
     Model AI;
     
-    
-    
-    if (intialisation_alg.empty()){
-        intialisation_alg = "default";
+    vector<vector<vector<float>>> weights;
+    for (int i = 0; i < layer_sizes.size()-1; i++){
+        weights.push_back(vector<vector<float>>(layer_sizes[i], vector<float>(layer_sizes[i+1], 0.0)));
     }
+    Heintialisation(&weights);
+    AI.weights = weights;
+
+    vector<vector<float>> bias;
 
     if (intialisation_alg == "default"){
+        Heintialisation(&weights);
+        AI.weights = weights;
 
 
+        for (int i = 0; i < layer_sizes.size()-1; i++){
+            bias.push_back(vector<float>(layer_sizes[i+1], 0.0))
+        }
+
+        AI.bias = bias;
     }
-    
-
-
-    
-
-    // make random inputs
-
 
     return AI;
 }
@@ -98,14 +101,19 @@ Model intialisation(int number_of_hidden_layers, int input_layer_size , int hidd
 int trainAI(){
 
     int input_layer_size = 784; // 28x28 image size
-    int hidden_layer_size = 16;
+    vector<int> hidden_layer_size (2,16);
     int number_of_hidden_layers = 2;
     int output_layer_size = 10;
 
+    vector<int> layer_size = {input_layer_size};
+    for (int i = 0; i < hidden_layer_size.size(); i++){
+        layer_size.push_back(hidden_layer_size[i]);
+    }
+    layer_size.push_back(output_layer_size);
 
     Dataset ds;
     ds = data_setup();
-    Model AI = intialisation(number_of_hidden_layers, input_layer_size, hidden_layer_size, output_layer_size, "default");
+    Model AI = intialisation( layer_size, "default");
 
 
     return 0;
