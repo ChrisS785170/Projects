@@ -1,3 +1,25 @@
+/*
+
+Basic introduction to Nueral networks and backpopagation
+
+This projects goal is make a nueral network which can intake input data (hand written images) and return the correct answer for that data
+
+A nueral network is a layers of nuerons linked together through weights and biases which calculate the probabilty the network believe the input actually is, this probability distribution is 
+an array holding all the possible answers that the input could be and will guess the answer with the highest probability.
+
+To begin with the program must convert the image into data for the network to intake, this is done in Mnist_input_translator.cpp, it basically converts the image into a data stream of 
+pixel values which each image being 784 pixels long, this data stream contains values ranging from 0-1 describing the colour of the pixel;
+
+Once the image is converted we feed images into the network's input layer, it then calculates the activation values for each layer in the network and finally calculates a probability distribution
+for the final layer. it then calculates how bad the guesses were and over many samples alters the weights and biases so that it is more likely to guess the correct answer.
+The pipeline goes in this order, input_conversion -> activation_calculation -> error calulation -> (after a batch of samples: default =20) Weight and bias update -> 
+(after training data : default 60000) Test on unknown dataset
+
+*/
+
+
+
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -8,8 +30,6 @@
 #include <cmath>
 
 using namespace std;
-
-// Plan is to implement back propagation, sorting of images, overall training process.
 
 
 /*
@@ -22,15 +42,15 @@ Default:
     z = [784, 16,16, 10]
     nueron = [784, 16,16, 10]
 
-    Relu (maybe leaky Relu to avoid problems) for activation calculation, then for output layer calculation Softmax
-    Will use He intialisation
-
-
-    NEED TO REMEMBER THAT WEIGHT MATRIX HAS ONE LESS SIZE THEN LAYER SIZE 
+    Relu for activation calculation, then for output layer calculation Softmax
+    He intialisation
 
 */
 
 struct Model{
+
+    /*The model we will be training */
+
     int number_of_hidden_layers;
     int number_of_input_nodes;
     int hidden_layer_size;
@@ -43,9 +63,18 @@ struct Model{
     vector<int> layer_sizes;
     float learning_rate;
     int label;
+    int batch_size;
+    float cost; 
 };
 
+void loss_function(vector<float> a, Model &AI){
+    /*calculate cost from the output of the sample C = -sum(label[i]log(a[i]))    since label is just a bucnh of 0s it comes out to just be one calculation where label[i] = 1*/
+    // this is never actually used in training so i didnt need to implement this : )
+    AI.cost = -log(a[AI.label]);
+}
+
 float Relu(float num){
+    /*standard relu function for activation calculation for every layer but the last*/
 
     if (num <= 0 ){
         return 0.0;
@@ -56,6 +85,7 @@ float Relu(float num){
 }
 
 vector<float> Softmax(vector<float> z){
+    /*Softmax function for activation calculation for the final layer*/
     int sum = 0;
     vector<float> act = z;
     for (int i = 0; i < z.size(); i++){
@@ -71,11 +101,15 @@ vector<float> Softmax(vector<float> z){
 
 
 void activation_calculation(Model &AI , vector<float> input){
+    /*calculate the activation for every nueron in every layer, begins by calculating the activation for every layer up to the final layer using relu and standard activation function
+    a = relu(z)  z = w[i-1]*n[i-1] - bias[i-1]  where i is our layer
+    final layer calculation is Softmax(z) 
+    */
 
     AI.nuerons[0] = input;
     float sum;
 
-    for (int i = 1; i < AI.layer_sizes.size()-1 ; i++){ // for each layer after the input layer  loops from 1 - 2
+    for (int i = 1; i < AI.layer_sizes.size()-1 ; i++){ // for each layer after the input layer  i.e loops from 1 - 2
         for (int j = 0; j < AI.layer_sizes[i]; j++){ // for each nueron in that layer
             sum = 0;
             for (int k = 0; k<AI.layer_sizes[i-1]; k++){ // for each weight in the previous layer
@@ -103,6 +137,7 @@ void activation_calculation(Model &AI , vector<float> input){
 
 
 float derivitive_relu(float num){
+    /*the derivitive of the relu function as its needed in the error calculation*/
     if (num <=  0){
         return 0 ; 
 
@@ -111,9 +146,9 @@ float derivitive_relu(float num){
     }
 }
 void update_AI(Model &AI){
-    /*will have to reset the erro values when the update happens*/
+    /*adjust weights and biases according to the error and batch size, then reset error for the next batch*/
 
-    int batch_size  = 20;
+    int batch_size  = AI.batch_size;
 
     for (int i = 0; i < AI.layer_sizes.size()-1 ; i++){ // for each layer after the input layer  will loop from 0 - 2
         for (int j = 0; j < AI.layer_sizes[i]; j++){ // for each nueron in that layer
@@ -140,6 +175,8 @@ void update_AI(Model &AI){
 
 
 vector<vector<float>> transpose_weight_matrix(vector<vector<float>> weights){
+    /* Transpose a matrix       [3,   4]   = [3 , 1]
+                                [1 , 2]]     [4  , 2]  */
     vector<vector<float>> transpose = vector<vector<float>>  (weights[0].size(), vector<float>(weights.size(), 0.0)); // this doesnt work for different vector size 784 * 16 -> 16 * 784
     for (int i = 0; i< weights.size(); i++){
         for (int j = 0; j<weights[0].size(); j++){
@@ -152,6 +189,7 @@ vector<vector<float>> transpose_weight_matrix(vector<vector<float>> weights){
 }
 
 vector<float> matrix_multiplication(vector<vector<float>> transpose , vector<float> error){
+    /* just standard matrix multiplication done in maths */
     vector<float> result = vector<float> (transpose.size(), 0.0);
     float sum;
     for (int i = 0; i<transpose.size(); i++){
@@ -167,16 +205,21 @@ vector<float> matrix_multiplication(vector<vector<float>> transpose , vector<flo
 
 
 void error_calculation(Model &AI){
-    /*because of how the vector sizes out error and bias are -1 behind weights, nuerons and z for the same layer  
-    - might have to do a snummation here as error should be calculated in batches  */
+    /*error calculation, used for adjusting weights each batch error is calculated each sample then summed over 20 samples and used to update the weights and biases 
+    error calculation is different for weight and bias*/
 
-    int output_layer_size = AI.layer_sizes.back(); // CURRENTLY INCORRECT AS ACTIVATION IS CALCULATED USING RELU INSTEAD OF SOFTMAX
-    int cost = 0;
+
+
+    /*because of how the vector sizes out error and bias are -1 behind weights, nuerons and z for the same layer  */
+
+
+
+    int output_layer_size = AI.layer_sizes.back(); 
     for (int i = 0; i<output_layer_size; i++){ // final layer calculation
         if (i == AI.label){
-            AI.error[AI.layer_sizes.size()-2][i] += (AI.nuerons[AI.layer_sizes.size()-1][i] - 1 ) * derivitive_relu(AI.z[AI.layer_sizes.size()-1][i]); //AI.layer_sizes.size()-2 == 2 
+            AI.error[AI.layer_sizes.size()-2][i] += (AI.nuerons[AI.layer_sizes.size()-1][i] - 1 ) ; //AI.layer_sizes.size()-2 == 2 
         }else{
-            AI.error[AI.layer_sizes.size()-2][i] += (AI.nuerons[AI.layer_sizes.size()-1][i] - 0 ) * derivitive_relu(AI.z[AI.layer_sizes.size()-1][i]);  
+            AI.error[AI.layer_sizes.size()-2][i] += (AI.nuerons[AI.layer_sizes.size()-1][i] - 0 ) ;  
         }
     }
     vector<float> result;
@@ -197,8 +240,8 @@ void error_calculation(Model &AI){
 
 
     for (int i = 0; i <AI.weights.size(); i++){ // 0 - 2
-        for (int j = 0; j<AI.weights[i].size(); j++){ //  784
-            for (int k = 0; k<AI.weights[i][j].size(); k++){ // 16
+        for (int j = 0; j<AI.weights[i].size(); j++){ //  784 ->16 - > 16
+            for (int k = 0; k<AI.weights[i][j].size(); k++){ // 16 - > 16 - > 10
                 AI.weight_error[i][j][k] += AI.error[i][k] * AI.nuerons[i][j];
                 
             }
@@ -207,8 +250,10 @@ void error_calculation(Model &AI){
 
 }
 
-// W = N(0 , sqrt(2/n)) where n is the number of inputs to the node 
+
 void Heintialisation( vector<vector<vector<float>>> &weights ){  
+    /*Heintialisation basically compares the number of input nodes of the layer and changes the range the weights could be intialised too. 
+    Alg:  W = N(0 , sqrt(2/n)) where n is the number of inputs to the node  and N is the normal distribution with mean 0 and std deviation of sqrt(2/n)  */
 
     for (int i = 0; i<weights.size(); i++){ // for the number layers
         float std = sqrt(2/weights[i].size());
@@ -232,6 +277,7 @@ void Heintialisation( vector<vector<vector<float>>> &weights ){
 
 
 Model intialisation(vector<int> layer_sizes, string intialisation_alg ){
+    /*just intialising all the values in the Model, mainly all the vectors*/
     Model AI;
     
     vector<vector<vector<float>>> weights;
@@ -268,7 +314,20 @@ Model intialisation(vector<int> layer_sizes, string intialisation_alg ){
     return AI;
 }
 
-void trainAI(){ // parameters would be layers and specificed alg 
+int guess_label(Model &AI){
+    float max = 0;
+    int guess = -1; 
+    for (int i = 0; i<AI.layer_sizes.back(); i++){
+        if (AI.nuerons[AI.layer_sizes.size()- 1][i] > max){
+            max = AI.nuerons[AI.layer_sizes.size()- 1][i]; 
+            guess = i;
+        }
+    }
+    return guess;
+}
+
+void trainAI(){ 
+    /*the general training funciton which wraps the whole process together */
 
     ////////////////////////////////////////////////////
     // intialisation
@@ -287,14 +346,13 @@ void trainAI(){ // parameters would be layers and specificed alg
     Dataset ds;
     ds = data_setup();
     Model AI = intialisation( layer_size, "default");
-    int batch_size =20;
+    AI.batch_size =20;
     
     
     ///////////////////////////////////////////////////
-
     //Training
     ///////////////////////////////////////////////////
-    int  train_dataset_size = ds.train_data.size() / 784; // 784 is the size of each image 28x28 pixels
+    int  train_dataset_size = ds.train_data.size() / 784; // 784 is the size of each image 28x28 pixels, will have to change this for modularity later 
     vector<float> input (input_layer_size , 0.0);
     int sample = 0;
 
@@ -303,7 +361,7 @@ void trainAI(){ // parameters would be layers and specificed alg
         for (int j = 0; j<input_layer_size; j++){
             input[j] = ds.train_data[j + (sample*input_layer_size)];
         }
-        if (sample%20 == 0){ // do an update 
+        if (sample%20 == 0){ // do an update every 20 samples
             activation_calculation(AI, input);
             error_calculation(AI);
             update_AI(AI);
@@ -314,7 +372,7 @@ void trainAI(){ // parameters would be layers and specificed alg
         }
         sample++;
         
-        // need to calculate activation of each layer -> calculate error -> backpropagate
+
 
     }
     ///////////////////////////////////////////////////
@@ -332,14 +390,13 @@ void trainAI(){ // parameters would be layers and specificed alg
         }
 
         activation_calculation(AI, input); 
-        // guess  = SOFTMAX
+        guess  = guess_label(AI);
         if (guess == AI.label){
             number_of_correct_guesses++;
         }
     }
     float percentage_of_correct_guesses = number_of_correct_guesses/test_dataset_size; 
     cout<<"percentage of correct guesses :"<< percentage_of_correct_guesses<< "/n";
-
 
 }
 
