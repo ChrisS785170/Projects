@@ -1,21 +1,30 @@
 /*
+ ============================================================================
+    Neural Network Implementation for MNIST Classification
+    ------------------------------------------------------
 
-Basic introduction to Nueral networks and backpopagation
+    This file contains a simple feedforward neural network implemented in C++.
+    The network is trained on the MNIST dataset (handwritten digits) and tested
+    for accuracy. It demonstrates key concepts of neural networks including
+    forward propagation, backpropagation, weight updates, and evaluation.
 
-This projects goal is make a nueral network which can intake input data (hand written images) and return the correct answer for that data
+    Key Features:
+      - Fully connected feedforward architecture.
+      - Configurable hidden layer sizes.
+      - ReLU activation for hidden layers.
+      - Softmax activation + cross-entropy for the output layer.
+      - He initialization for weights.
+      - Mini-batch training (batch size configurable).
+      - Accuracy evaluation on test data.
 
-A nueral network is a layers of nuerons linked together through weights and biases which calculate the probabilty the network believe the input actually is, this probability distribution is 
-an array holding all the possible answers that the input could be and will guess the answer with the highest probability.
+    Notes:
+      - Assumes MNIST dataset is preprocessed into vectors of floats.
+      - Uses fixed image size (28x28 = 784 inputs).
+      - Optimized for clarity and educational purposes rather than performance.
 
-To begin with the program must convert the image into data for the network to intake, this is done in Mnist_input_translator.cpp, it basically converts the image into a data stream of 
-pixel values which each image being 784 pixels long, this data stream contains values ranging from 0-1 describing the colour of the pixel;
-
-Once the image is converted we feed images into the network's input layer, it then calculates the activation values for each layer in the network and finally calculates a probability distribution
-for the final layer. it then calculates how bad the guesses were and over many samples alters the weights and biases so that it is more likely to guess the correct answer.
-The pipeline goes in this order, input_conversion -> activation_calculation -> error calulation -> (after a batch of samples: default =20) Weight and bias update -> 
-(after training data : default 60000) Test on unknown dataset
-
+ ============================================================================
 */
+
 
 
 
@@ -47,25 +56,40 @@ Default:
 
 */
 
-struct Model{
+struct Model {
+    /* 
+     * A struct representing a fully-connected feedforward neural network,
+     * including all parameters, intermediate values, and error terms
+     * needed for training with backpropagation.
+     */
 
-    /*The model we will be training */
+    // Network architecture
+    int number_of_hidden_layers;   // Number of hidden layers (not counting input/output)
+    int number_of_input_nodes;     // Number of input features/nodes
+    int hidden_layer_size;         // Number of neurons per hidden layer (assuming uniform size)
+    vector<int> layer_sizes;       // Sizes of all layers (input, hidden(s), output)
 
-    int number_of_hidden_layers;
-    int number_of_input_nodes;
-    int hidden_layer_size;
-    vector<vector<vector<float>>> weights;
-    vector<vector<float>> bias;
-    vector<vector<float>> nuerons;
-    vector<vector<float>> z;
-    vector<vector<vector<float>>> weight_error;
-    vector<vector<float>> error;
-    vector<int> layer_sizes;
-    float learning_rate;
-    int label;
-    int batch_size;
-    float cost; 
+    // Trainable parameters
+    vector<vector<vector<float>>> weights; // Weights for each layer: [layer][neuron][previous_neuron]
+    vector<vector<float>> bias;            // Bias terms for each layer: [layer][neuron]
+
+    // Forward pass values
+    vector<vector<float>> nuerons; // Activations of each layer: [layer][neuron]
+    vector<vector<float>> z;       // Pre-activation values (weighted sums before activation): [layer][neuron]
+
+    // Backpropagation values
+    vector<vector<vector<float>>> weight_error; // Accumulated gradients for weights during backprop
+    vector<vector<float>> error;                // Error terms (δ) for each layer: [layer][neuron]
+
+    // Training hyperparameters
+    float learning_rate;   // Step size for weight updates
+    int batch_size;        // Number of samples per training batch
+    float cost;            // Current cost (loss) for the batch
+
+    // Labels / targets
+    int label;             // True label for the current training example (used in forward/backward pass)
 };
+
 
 void loss_function(vector<float> a, Model &AI){
     /*calculate cost from the output of the sample C = -sum(label[i]log(a[i]))    since label is just a bucnh of 0s it comes out to just be one calculation where label[i] = 1*/
@@ -74,7 +98,23 @@ void loss_function(vector<float> a, Model &AI){
 }
 
 float Relu(float num){
-    /*standard relu function for activation calculation for every layer but the last*/
+    /*
+    * Applies the Rectified Linear Unit (ReLU) activation function.
+    *
+    * ReLU is defined as:
+    *      f(x) = max(0, x)
+    *
+    * It is used as the activation function for all hidden layers
+    * (but not the final/output layer in this network).
+    *
+    * Parameters:
+    *      num - The input value (typically a pre-activation value z).
+    *
+    * Returns:
+    *      The activated value:
+    *          - 0.0 if num <= 0
+    *          - num otherwise
+    */
 
     if (num <= 0 ){
         return 0.0;
@@ -84,321 +124,633 @@ float Relu(float num){
 
 }
 
-vector<float> Softmax(vector<float> z){
-    /*Softmax function for activation calculation for the final layer*/
-    int sum = 0;
+
+vector<float> Softmax(vector<float> z) {
+    /*
+    * Applies the Softmax activation function to a vector of values.
+    *
+    * Softmax is typically used in the final/output layer of a neural network
+    * for multi-class classification. It converts raw scores (logits, z values)
+    * into a probability distribution across all output classes.
+    *
+    * Formula:
+    *      softmax(z_i) = exp(z_i) / Σ_j exp(z_j)
+    *
+    * Parameters:
+    *      z - A vector of pre-activation values (logits) for the output layer.
+    *
+    * Returns:
+    *      A vector of probabilities (same size as z), where:
+    *          - Each value is between 0 and 1
+    *          - All values sum to 1
+    */
+    float sum = 0.0f;
     vector<float> act = z;
-    for (int i = 0; i < z.size(); i++){
+
+    // Compute denominator (sum of exponentials)
+    for (int i = 0; i < z.size(); i++) {
         sum += exp(z[i]);
     }
-  
-    for (int i = 0; i < z.size(); i++){
-        act[i] = exp(z[i])/sum; 
+
+    // Compute normalized probabilities
+    for (int i = 0; i < z.size(); i++) {
+        act[i] = exp(z[i]) / sum;
     }
 
     return act;
 }
 
 
-void activation_calculation(Model &AI , vector<float> input){
-    /*calculate the activation for every nueron in every layer, begins by calculating the activation for every layer up to the final layer using relu and standard activation function
-    a = relu(z)  z = w[i-1]*n[i-1] - bias[i-1]  where i is our layer
-    final layer calculation is Softmax(z) 
-    */
 
+void activation_calculation(Model &AI, vector<float> input) {
+    /*
+    * Performs the forward pass through the network,
+    * computing activations for every neuron in every layer.
+    *
+    * Process:
+    *   1. Input layer activations are set directly from the input vector.
+    *   2. For each hidden layer:
+    *        - Compute z = W * a_prev - b
+    *        - Apply ReLU activation: a = ReLU(z)
+    *   3. For the final/output layer:
+    *        - Compute z = W * a_prev - b
+    *        - Apply Softmax activation: a = Softmax(z)
+    *
+    * Parameters:
+    *   AI    - Reference to the Model struct containing all weights, biases,
+    *           and storage for intermediate values (z and activations).
+    *   input - Vector of input values (activations for the input layer).
+    *
+    * Updates:
+    *   - AI.nuerons: stores the activations for each layer.
+    *   - AI.z:       stores the pre-activation values for each layer.
+    */
+    // Set input layer activations
     AI.nuerons[0] = input;
     float sum;
 
-    for (int i = 1; i < AI.layer_sizes.size()-1 ; i++){ // for each layer after the input layer  i.e loops from 1 - 2
-        for (int j = 0; j < AI.layer_sizes[i]; j++){ // for each nueron in that layer
-            sum = 0;
-            for (int k = 0; k<AI.layer_sizes[i-1]; k++){ // for each weight in the previous layer
-                    sum += AI.weights[i-1][k][j]* AI.nuerons[i-1][k]  - AI.bias[i-1][j] ; // bias is -1 as well as even tho its the bias of the second layer b[0] is the second layers bias     
-
+    // Forward pass through all hidden layers (using ReLU)
+    for (int i = 1; i < AI.layer_sizes.size() - 1; i++) {   // loop over hidden layers
+        for (int j = 0; j < AI.layer_sizes[i]; j++) {       // loop over neurons in current layer
+            sum = 0.0f;
+            for (int k = 0; k < AI.layer_sizes[i-1]; k++) { // loop over previous layer neurons
+                // Weighted sum: z = W * a_prev - b
+                sum += AI.weights[i-1][k][j] * AI.nuerons[i-1][k] - AI.bias[i-1][j];
             }
-            AI.z[i][j] = sum;
-            AI.nuerons[i][j] = Relu(sum);
-             
+            AI.z[i][j] = sum;              // Store pre-activation
+            AI.nuerons[i][j] = Relu(sum);  // Apply ReLU activation
         }
     }
 
-    for (int j = 0; j < AI.layer_sizes.back(); j++){ // for final layer  
-        sum = 0;
-        for (int k = 0; k<AI.layer_sizes.size()-2; k++){ // for each weight in the second to last layer i.e layer 3 or w[2]
-                sum += AI.weights[AI.layer_sizes.size()-2][k][j]* AI.nuerons[AI.layer_sizes.size()-2][k]  - AI.bias[AI.layer_sizes.size()-2][j] ; // bias is -1 as well as even tho its the bias of the second layer b[0] is the second layers bias     
-
+    // Forward pass for the final/output layer (using Softmax)
+    for (int j = 0; j < AI.layer_sizes.back(); j++) {       // loop over output neurons
+        sum = 0.0f;
+        for (int k = 0; k < AI.layer_sizes[AI.layer_sizes.size()-2]; k++) {
+            sum += AI.weights[AI.layer_sizes.size()-2][k][j] * AI.nuerons[AI.layer_sizes.size()-2][k] - AI.bias[AI.layer_sizes.size()-2][j];
         }
-        AI.z[AI.layer_sizes.size()-1][j] = sum;            
+        AI.z[AI.layer_sizes.size()-1][j] = sum; // store logits
     }
+
+    // Apply Softmax to final layer
     AI.nuerons[AI.layer_sizes.size()-1] = Softmax(AI.z[AI.layer_sizes.size()-1]);
-
 }
+
 
 
 
 float derivitive_relu(float num){
-    /*the derivitive of the relu function as its needed in the error calculation*/
-    if (num <=  0){
-        return 0 ; 
+    /*
+    * Computes the derivative of the Rectified Linear Unit (ReLU) function.
+    *
+    * ReLU is defined as:
+    *      f(x) = max(0, x)
+    *
+    * Its derivative is:
+    *      f'(x) = 0 if x <= 0
+    *               1 if x > 0
+    *
+    * This derivative is used during backpropagation to calculate the error
+    * term (δ) for neurons in hidden layers that use ReLU activation.
+    *
+    * Parameters:
+    *      num - The pre-activation value (z) of a neuron.
+    *
+    * Returns:
+    *      0.0 if num <= 0
+    *      1.0 if num > 0
+    */
+    if (num <=  0.0f){
+        return 0.0f ; 
 
     }else{
-        return 1.0;
+        return 1.0f;
     }
 }
-void update_AI(Model &AI){
-    /*adjust weights and biases according to the error and batch size, then reset error for the next batch*/
 
-    int batch_size  = AI.batch_size;
+void update_AI(Model &AI) {
+    /*
+    * Updates the model parameters (weights and biases) using the
+    * accumulated errors from backpropagation, then resets the error terms
+    * for the next batch.
+    *
+    * Process:
+    *   1. For each layer:
+    *        - Update each weight using gradient descent:
+    *              W_new = W_old - learning_rate * (dW / batch_size)
+    *        - Update each bias using gradient descent:
+    *              b_new = b_old - learning_rate * (db / batch_size)
+    *   2. Reset error accumulators to zero in preparation for the next batch.
+    *
+    * Notes:
+    *   - weight_error[i][j][k] should store the accumulated gradient
+    *     for the weight from neuron j in layer i to neuron k in layer i+1.
+    *   - error[i][j] should store the accumulated gradient for the bias
+    *     of neuron j in layer i+1.
+    *   - Division by batch_size ensures proper averaging across a batch.
+    *
+    * Parameters:
+    *   AI - Reference to the Model struct containing all network parameters,
+    *        gradients, and hyperparameters.
+    *
+    * Updates:
+    *   - AI.weights: adjusted based on accumulated gradients.
+    *   - AI.bias:    adjusted based on accumulated gradients.
+    *   - AI.error:   reset to zero for the next batch.
+    */
+    int batch_size = AI.batch_size;
 
-    for (int i = 0; i < AI.layer_sizes.size()-1 ; i++){ // for each layer after the input layer  will loop from 0 - 2
-        for (int j = 0; j < AI.layer_sizes[i]; j++){ // for each nueron in that layer
-            for (int k = 0; k<AI.layer_sizes[i+1]; k++){ // for each weight in that layer
-       
-                AI.weights[i][j][k] = AI.weights[i][j][k] - (AI.learning_rate*    ((AI.weight_error[i][j][k])/batch_size)   ); // need to make sure to divide the error by the batch size when we do the error calculation as it doesnt get done here
+    // Update weights and biases for each layer
+    for (int i = 0; i < AI.layer_sizes.size() - 1; i++) {          // loop over layers
+        for (int j = 0; j < AI.layer_sizes[i]; j++) {              // loop over neurons in current layer
+            for (int k = 0; k < AI.layer_sizes[i+1]; k++) {        // loop over neurons in next layer
+                // Gradient descent update for weight
+                AI.weights[i][j][k] -= AI.learning_rate * (AI.weight_error[i][j][k] / batch_size);
             }
         }
-        for (int j = 0; j<AI.layer_sizes[i+1]; j++){
-            AI.bias[i][j] = AI.bias[i][j] - (((AI.error[i][j])/batch_size) * AI.learning_rate); // the weight vector 
-
+        for (int j = 0; j < AI.layer_sizes[i+1]; j++) {
+            // Gradient descent update for bias
+            AI.bias[i][j] -= (AI.error[i][j] / batch_size) * AI.learning_rate;
         }
     }
 
-    for (int i = 0; i < AI.layer_sizes.size()-1; i++){ // 0 -2
-        for (int j = 0; j<AI.layer_sizes[i+1]; j++ ){
-            AI.error[i][j] = 0.0;
+    // Reset error accumulators for next batch
+    for (int i = 0; i < AI.layer_sizes.size() - 1; i++) {
+        for (int j = 0; j < AI.layer_sizes[i+1]; j++) {
+            AI.error[i][j] = 0.0f;
         }
-
     }
-
-
 }
 
 
-vector<vector<float>> transpose_weight_matrix(vector<vector<float>> weights){
-    /* Transpose a matrix       [3,   4]   = [3 , 1]
-                                [1 , 2]]     [4  , 2]  */
-    vector<vector<float>> transpose = vector<vector<float>>  (weights[0].size(), vector<float>(weights.size(), 0.0)); // this doesnt work for different vector size 784 * 16 -> 16 * 784
-    for (int i = 0; i< weights.size(); i++){
-        for (int j = 0; j<weights[0].size(); j++){
 
-            transpose[j][i] = weights[i][j];  // will have to test this later with smaller matrixes
+vector<vector<float>> transpose_weight_matrix(vector<vector<float>> weights) {
+    /*
+    * Computes the transpose of a 2D weight matrix.
+    *
+    * Transposition swaps the rows and columns of the matrix:
+    *      If the input matrix has shape [rows x cols],
+    *      the result will have shape [cols x rows].
+    *
+    * Example:
+    *      Input:
+    *          [3, 4]
+    *          [1, 2]
+    *      Output:
+    *          [3, 1]
+    *          [4, 2]
+    *
+    * Parameters:
+    *      weights - A 2D vector (matrix) of size [rows x cols],
+    *                where rows = number of source neurons,
+    *                and cols = number of target neurons.
+    *
+    * Returns:
+    *      A new 2D vector representing the transposed matrix
+    *      with size [cols x rows].
+    *
+    * Notes:
+    *      - This implementation assumes all rows in `weights` 
+    *        are of equal size (valid matrix).
+    *      - Useful in backpropagation when reusing weight matrices
+    *        to propagate error terms backward.
+    */
+
+    // Create a matrix with flipped dimensions: [cols x rows]
+    vector<vector<float>> transpose(
+        weights[0].size(),                   // number of rows in transpose
+        vector<float>(weights.size(), 0.0f)  // number of cols in transpose
+    );
+
+    // Swap rows and columns
+    for (int i = 0; i < weights.size(); i++) {
+        for (int j = 0; j < weights[0].size(); j++) {
+            transpose[j][i] = weights[i][j];
         }
     }
 
-    return transpose; 
+    return transpose;
 }
 
-vector<float> matrix_multiplication(vector<vector<float>> transpose , vector<float> error){
-    /* just standard matrix multiplication done in maths */
-    vector<float> result = vector<float> (transpose.size(), 0.0);
+
+vector<float> matrix_multiplication(vector<vector<float>> transpose, vector<float> error) {
+    /*
+    * Performs matrix-vector multiplication.
+    *
+    * Specifically computes:
+    *      result = transpose * error
+    *
+    * Where:
+    *   - transpose is a 2D matrix of size [m x n]
+    *   - error is a vector of size [n]
+    *   - result is a vector of size [m]
+    *
+    * Formula:
+    *      result[i] = Σ_j (transpose[i][j] * error[j])
+    *
+    * Parameters:
+    *      transpose - A 2D vector (matrix), often the transposed
+    *                  weight matrix in backpropagation.
+    *      error     - A 1D vector representing the error terms (δ)
+    *                  from the next layer.
+    *
+    * Returns:
+    *      A 1D vector of size [m], containing the propagated error
+    *      for the current layer.
+    *
+    * Notes:
+    *   - This is standard matrix-vector multiplication used in linear algebra.
+    *   - In backpropagation, this is typically used to compute
+    *     the error for layer L-1 given the error in layer L:
+    *         δ[L-1] = (W[L]^T) * δ[L]
+    */
+    vector<float> result(transpose.size(), 0.0f);
     float sum;
-    for (int i = 0; i<transpose.size(); i++){
-        sum = 0.0; 
-        for (int j = 0; j<transpose[0].size(); j++){
-            sum+= transpose[i][j]* error[j];
+
+    // For each row of the matrix
+    for (int i = 0; i < transpose.size(); i++) {
+        sum = 0.0f;
+        // Dot product of row i with the error vector
+        for (int j = 0; j < transpose[0].size(); j++) {
+            sum += transpose[i][j] * error[j];
         }
         result[i] = sum;
     }
-    return result;
 
+    return result;
 }
 
 
-void error_calculation(Model &AI){
-    /*error calculation, used for adjusting weights each batch error is calculated each sample then summed over 20 samples and used to update the weights and biases 
-    error calculation is different for weight and bias*/
 
 
-
-    /*because of how the vector sizes out error and bias are -1 behind weights, nuerons and z for the same layer  */
-
-
-
-    int output_layer_size = AI.layer_sizes.back(); 
-    for (int i = 0; i<output_layer_size; i++){ // final layer calculation
-        if (i == AI.label){
-            AI.error[AI.layer_sizes.size()-2][i] += (AI.nuerons[AI.layer_sizes.size()-1][i] - 1 ) ; //AI.layer_sizes.size()-2 == 2 
-        }else{
-            AI.error[AI.layer_sizes.size()-2][i] += (AI.nuerons[AI.layer_sizes.size()-1][i] - 0 ) ;  
+void error_calculation(Model &AI) {
+    /*
+    * Performs backpropagation error calculation for the network.
+    *
+    * This function computes and accumulates the error terms (δ) used to update
+    * weights and biases. The process happens per sample and is accumulated over
+    * a batch before being applied during weight updates.
+    *
+    * Steps:
+    *   1. Compute error at the output layer using the derivative of the cost
+    *      function w.r.t. activations (Softmax + Cross-Entropy simplifies to y^ - y).
+    *   2. Propagate error backwards through hidden layers using:
+    *          δ[l] = (W[l+1]^T * δ[l+1]) ⊙ ReLU'(z[l+1])
+    *      where ⊙ is element-wise multiplication.
+    *   3. Compute weight error contributions:
+    *          ∂C/∂W[l][j][k] = δ[l][k] * a[l][j]
+    *      and accumulate them in AI.weight_error for batch updates.
+    *
+    * Parameters:
+    *      AI - The model structure containing:
+    *           - layer_sizes  : vector with size of each layer
+    *           - weights      : 3D vector of weights
+    *           - bias         : biases for each layer
+    *           - neurons      : activations per layer
+    *           - z            : pre-activation values
+    *           - error        : error terms (δ) per layer
+    *           - weight_error : accumulated weight gradients
+    *           - label        : the true label index for the current sample
+    *
+    * Notes:
+    *   - Errors and weight gradients are accumulated over the batch.
+    *   - Only reset in update_AI() after being applied.
+    *   - Output layer uses Softmax + Cross-Entropy simplification.
+    */
+    // --- Step 1: Output layer error calculation ---
+    int output_layer_size = AI.layer_sizes.back();
+    for (int i = 0; i < output_layer_size; i++) {
+        if (i == AI.label) {
+            // If i is the correct class: (y^ - y) = (activation - 1)
+            AI.error[AI.layer_sizes.size() - 2][i] += (AI.nuerons.back()[i] - 1);
+        } else {
+            // If i is not the correct class: (y^ - y) = (activation - 0)
+            AI.error[AI.layer_sizes.size() - 2][i] += (AI.nuerons.back()[i] - 0);
         }
     }
+
+    // --- Step 2: Backpropagation through hidden layers ---
     vector<float> result;
     vector<vector<float>> transpose;
-    for (int i = AI.layer_sizes.size()-3; i>0; i++){ // loop from second to last layer to the first start at 1 - 0  
-        /*the way ive done the weight matrix might cause problems the with formula documentation in my implementation
-        E[1] = W[1] * E[2] o R'(z[2])
-        the issue comes with the transpose number of nuerons x weights to next nuerons
-        */
-        transpose = transpose_weight_matrix(AI.weights[i+1]); // i think this might be wrong 
-        result = matrix_multiplication(transpose, AI.error[i+1]); // will begin at 3 and we want error 2
 
-        for (int j = 0; j<AI.layer_sizes[i] ;j++){
-            AI.error[i][j] = result[j] * derivitive_relu(AI.z[i+1][j]);
-        } // since z has a size of 4, and we want the z of the third layer its [2] therfore i+1
+    // Loop backwards from second-to-last layer to first hidden layer
+    for (int i = AI.layer_sizes.size() - 3; i > 0; i--) {
+        /*
+         * δ[l] = (W[l+1]^T * δ[l+1]) ⊙ ReLU'(z[l+1])
+         * Note:
+         *   - AI.weights[i+1] corresponds to weights between layer l+1 and l+2
+         *   - Transpose ensures proper alignment for multiplication
+         */
+        transpose = transpose_weight_matrix(AI.weights[i + 1]);
+        result = matrix_multiplication(transpose, AI.error[i + 1]);
+
+        // Apply ReLU derivative to propagate error
+        for (int j = 0; j < AI.layer_sizes[i]; j++) {
+            AI.error[i][j] = result[j] * derivitive_relu(AI.z[i + 1][j]);
+        }
     }
 
-
-
-    for (int i = 0; i <AI.weights.size(); i++){ // 0 - 2
-        for (int j = 0; j<AI.weights[i].size(); j++){ //  784 ->16 - > 16
-            for (int k = 0; k<AI.weights[i][j].size(); k++){ // 16 - > 16 - > 10
+    // --- Step 3: Accumulate weight error contributions ---
+    for (int i = 0; i < AI.weights.size(); i++) {             // For each layer
+        for (int j = 0; j < AI.weights[i].size(); j++) {      // For each neuron in layer i
+            for (int k = 0; k < AI.weights[i][j].size(); k++) { // For each connection to layer i+1
+                // ∂C/∂W[i][j][k] = δ[i][k] * a[i][j]
                 AI.weight_error[i][j][k] += AI.error[i][k] * AI.nuerons[i][j];
-                
             }
         }
     }
-
 }
 
 
-void Heintialisation( vector<vector<vector<float>>> &weights ){  
-    /*Heintialisation basically compares the number of input nodes of the layer and changes the range the weights could be intialised too. 
-    Alg:  W = N(0 , sqrt(2/n)) where n is the number of inputs to the node  and N is the normal distribution with mean 0 and std deviation of sqrt(2/n)  */
+void Heintialisation(vector<vector<vector<float>>> &weights) {
+    /*
+    * Performs He (Kaiming) initialization of the network weights.
+    *
+    * He initialization sets the weights of each layer based on the number
+    * of input connections to that layer. This helps keep the variance of
+    * activations stable across layers, especially when using ReLU activation.
+    *
+    * Formula:
+    *      W ~ N(0, sqrt(2 / n))
+    *      where:
+    *          - n = number of input connections to the neuron
+    *          - N = normal distribution with mean 0 and std deviation sqrt(2/n)
+    *
+    * Parameters:
+    *      weights - A 3D vector representing the network weights:
+    *                [layer][source_neuron][target_neuron]
+    *
+    * Notes:
+    *      - Each weight is drawn independently from a normal distribution.
+    *      - Using this initialization improves convergence for deep networks
+    *        with ReLU activations.
+    *      - Optional: seed the random engine for reproducibility.
+    */
+    for (int i = 0; i < weights.size(); i++) { // For each layer
+        float std = sqrt(2.0f / weights[i].size()); // Standard deviation based on number of inputs
 
-    for (int i = 0; i<weights.size(); i++){ // for the number layers
-        float std = sqrt(2/weights[i].size());
+        // Random number generator for normal distribution
+        default_random_engine generator;  // Can add a seed for reproducibility
+        normal_distribution<double> distribution(0.0, std);
 
-        
-        default_random_engine generator; // might want to add a seed
-        normal_distribution<double> distribution (0.0,std);
-
-        for (int j = 0; j<weights[i].size(); j++){ // for every node in each layer
-            for (int k = 0; k<weights[i][0].size(); k++){ // for every weight in each node
+        // Initialize each weight in the layer
+        for (int j = 0; j < weights[i].size(); j++) {           // For each neuron in the layer
+            for (int k = 0; k < weights[i][0].size(); k++) {    // For each connection from this neuron
                 weights[i][j][k] = distribution(generator);
             }
         }
-
-
     }
-
-
-
 }
 
 
-Model intialisation(vector<int> layer_sizes, string intialisation_alg ){
-    /*just intialising all the values in the Model, mainly all the vectors*/
+
+
+Model intialisation(vector<int> layer_sizes, string intialisation_alg) {
+    /*
+    * Initializes a Model struct with the specified layer sizes and weight initialization algorithm.
+    *
+    * This function sets up all the necessary data structures for a neural network, including:
+    *   - weights
+    *   - biases
+    *   - activations (neurons)
+    *   - pre-activations (z)
+    *   - error terms
+    *   - layer sizes
+    *   - learning rate
+    *
+    * Parameters:
+    *   layer_sizes        - A vector specifying the number of neurons in each layer, 
+    *                        e.g., [784, 16, 16, 10].
+    *   intialisation_alg  - A string specifying which weight initialization algorithm to use.
+    *                        Currently supports:
+    *                          - "default": uses He initialization for ReLU layers.
+    *
+    * Returns:
+    *   A fully initialized Model struct with all vectors sized correctly and weights initialized.
+    *
+    * Notes:
+    *   - Biases and errors are sized per layer except the input layer.
+    *   - Neurons and z vectors include the input layer.
+    *   - Learning rate is set to a default value of 0.01.
+    */
     Model AI;
-    
+
+    // --- Step 1: Initialize weight matrices ---
+    // weights[i] is a matrix connecting layer i to layer i+1
     vector<vector<vector<float>>> weights;
-    for (int i = 0; i < layer_sizes.size()-1; i++){ // 0 - 2
-        weights.push_back(vector<vector<float>>(layer_sizes[i], vector<float>(layer_sizes[i+1], 0.0)));
+    for (int i = 0; i < layer_sizes.size() - 1; i++) {
+        weights.push_back(vector<vector<float>>(
+            layer_sizes[i],                     // rows = neurons in current layer
+            vector<float>(layer_sizes[i + 1], 0.0f) // cols = neurons in next layer
+        ));
     }
 
-    vector<vector<float>> bias;
-    vector<vector<float>> error;
-    vector<vector<float>> nuerons;
-    vector<vector<float>> z;
+    // --- Step 2: Initialize other network vectors ---
+    vector<vector<float>> bias;      // bias[i][j] = bias for neuron j in layer i+1
+    vector<vector<float>> error;     // error[i][j] = accumulated error for neuron j in layer i+1
+    vector<vector<float>> nuerons;   // activations per layer
+    vector<vector<float>> z;         // pre-activation values per layer
 
-    if (intialisation_alg == "default"){
+    if (intialisation_alg == "default") {
+        // --- Step 3: Apply weight initialization algorithm ---
         Heintialisation(weights);
         AI.weights = weights;
 
+        // --- Step 4: Initialize bias and error vectors ---
+        for (int i = 0; i < layer_sizes.size() - 1; i++) { 
+            bias.push_back(vector<float>(layer_sizes[i + 1], 0.0f));
+            error.push_back(vector<float>(layer_sizes[i + 1], 0.0f));
+        }
 
-        for (int i = 0; i < layer_sizes.size()-1; i++){ // 0 -2
-            bias.push_back(vector<float>(layer_sizes[i+1], 0.0));
-            error.push_back(vector<float>(layer_sizes[i+1], 0.0));
+        // --- Step 5: Initialize neuron activations and z vectors ---
+        for (int i = 0; i < layer_sizes.size(); i++) {
+            nuerons.push_back(vector<float>(layer_sizes[i], 0.0f));
+            z.push_back(vector<float>(layer_sizes[i], 0.0f));
         }
-        for (int i = 0; i < layer_sizes.size(); i++){ //0 - 3
-            nuerons.push_back(vector<float>(layer_sizes[i], 0.0));
-            z.push_back(vector<float>(layer_sizes[i], 0.0));
-        }
+
+        // --- Step 6: Assign to Model struct ---
         AI.error = error;
         AI.bias = bias;
         AI.nuerons = nuerons;
         AI.layer_sizes = layer_sizes;
-        AI.learning_rate = 0.01;
+        AI.learning_rate = 0.01f; // default learning rate
         AI.z = z;
     }
 
     return AI;
 }
 
-int guess_label(Model &AI){
-    float max = 0;
-    int guess = -1; 
-    for (int i = 0; i<AI.layer_sizes.back(); i++){
-        if (AI.nuerons[AI.layer_sizes.size()- 1][i] > max){
-            max = AI.nuerons[AI.layer_sizes.size()- 1][i]; 
-            guess = i;
+
+
+int guess_label(Model &AI) {
+    /*
+    * Determines the predicted label of the neural network output.
+    *
+    * This function examines the activations of the final/output layer
+    * (after Softmax) and returns the index of the neuron with the
+    * highest activation. This corresponds to the network's predicted class.
+    *
+    * Parameters:
+    *      AI - The Model struct containing the neural network, including
+    *           the neuron activations for all layers.
+    *
+    * Returns:
+    *      An integer representing the predicted class label:
+    *          - 0 .. (number of output neurons - 1)
+    *          - -1 if no neuron has a value greater than the initial max (rare case)
+    *
+    * Notes:
+    *      - Assumes the output layer activations are probabilities from Softmax.
+    *      - Uses a simple argmax to select the predicted class.
+    */
+    float max = 0.0f;      // Track the highest activation value
+    int guess = -1;         // Track the index of the neuron with highest activation
+
+    // Loop over all neurons in the output layer
+    for (int i = 0; i < AI.layer_sizes.back(); i++) {
+        if (AI.nuerons[AI.layer_sizes.size() - 1][i] > max) {
+            max = AI.nuerons[AI.layer_sizes.size() - 1][i]; // Update max value
+            guess = i;                                     // Update predicted class index
         }
     }
+
     return guess;
 }
 
-void trainAI(){ 
-    /*the general training funciton which wraps the whole process together */
+
+
+void trainAI() {
+    /*
+    * Trains a simple fully connected neural network on the MNIST dataset
+    * and evaluates its accuracy on the test set.
+    *
+    * Workflow:
+    *   1. Initialize network structure and weights.
+    *   2. Load dataset.
+    *   3. Loop through the training set:
+    *        - Perform forward pass (activation calculation)
+    *        - Compute backpropagation errors
+    *        - Update weights and biases every batch
+    *   4. Loop through the test set:
+    *        - Perform forward pass
+    *        - Determine predicted label using argmax
+    *        - Count correct predictions
+    *   5. Compute and display overall accuracy.
+    *
+    * Notes:
+    *   - Uses a batch size of 20 for gradient updates.
+    *   - Assumes input images are flattened to vectors of size 784 (28x28).
+    *   - Uses ReLU for hidden layers and Softmax for the output layer.
+    *   - Learning rate, weight initialization, and hidden layer sizes are defined in the function.
+    */
+
 
     ////////////////////////////////////////////////////
-    // intialisation
+    // Step 1: Network Initialization
     ////////////////////////////////////////////////////
-    int input_layer_size = 784; // 28x28 image size
-    vector<int> hidden_layer_size (2,16);
-    int number_of_hidden_layers = 2;
-    int output_layer_size = 10;
+    int input_layer_size = 784;           // 28x28 images
+    vector<int> hidden_layer_size(2, 16); // Two hidden layers of 16 neurons each
+    int output_layer_size = 10;           // 10 output classes (digits 0-9)
 
+    // Construct full layer size vector
     vector<int> layer_size = {input_layer_size};
-    for (int i = 0; i < hidden_layer_size.size(); i++){
+    for (int i = 0; i < hidden_layer_size.size(); i++) {
         layer_size.push_back(hidden_layer_size[i]);
     }
     layer_size.push_back(output_layer_size);
 
-    Dataset ds;
-    ds = data_setup();
-    Model AI = intialisation( layer_size, "default");
-    AI.batch_size =20;
-    
-    
-    ///////////////////////////////////////////////////
-    //Training
-    ///////////////////////////////////////////////////
-    int  train_dataset_size = ds.train_data.size() / 784; // 784 is the size of each image 28x28 pixels, will have to change this for modularity later 
-    vector<float> input (input_layer_size , 0.0);
+    // Load dataset
+    Dataset ds = data_setup();
+
+    // Initialize model with He initialization
+    Model AI = intialisation(layer_size, "default");
+    AI.batch_size = 20; // Batch size for gradient updates
+
+    ////////////////////////////////////////////////////
+    // Step 2: Training Loop
+    ////////////////////////////////////////////////////
+    int train_dataset_size = ds.train_data.size() / 784; // Number of training samples
+    vector<float> input(input_layer_size, 0.0f);
     int sample = 0;
 
-    for (int i = 0; i < train_dataset_size; i++){ // should be 60000 for Mnist dataset
+    for (int i = 0; i < train_dataset_size; i++) {
+        // Set current label
         AI.label = ds.train_labels[sample];
-        for (int j = 0; j<input_layer_size; j++){
-            input[j] = ds.train_data[j + (sample*input_layer_size)];
+
+        // Prepare input vector from flattened image
+        for (int j = 0; j < input_layer_size; j++) {
+            input[j] = ds.train_data[j + (sample * input_layer_size)];
         }
-        if (sample%20 == 0){ // do an update every 20 samples
-            activation_calculation(AI, input);
-            error_calculation(AI);
+
+        // Forward pass and backpropagation
+        activation_calculation(AI, input);
+        error_calculation(AI);
+
+        // Update weights and biases every batch
+        if (sample % AI.batch_size == 0) {
             update_AI(AI);
-
-        }else{
-            activation_calculation(AI, input);
-            error_calculation(AI);
         }
+
         sample++;
-        
-
-
     }
-    ///////////////////////////////////////////////////
-    // Testing
-    ///////////////////////////////////////////////////
 
+    ////////////////////////////////////////////////////
+    // Step 3: Testing / Evaluation
+    ////////////////////////////////////////////////////
     int test_dataset_size = ds.test_data.size() / 784;
     sample = 0;
     int guess = 0;
-    int number_of_correct_guesses= 0;
-    for (int i = 0; i < test_dataset_size; i++){
+    int number_of_correct_guesses = 0;
+
+    for (int i = 0; i < test_dataset_size; i++) {
+        // Set current label
         AI.label = ds.test_labels[sample];
-        for (int j = 0; j<input_layer_size; j++){
-            input[j] = ds.test_data[j + (sample*input_layer_size)];
+
+        // Prepare input vector from flattened image
+        for (int j = 0; j < input_layer_size; j++) {
+            input[j] = ds.test_data[j + (sample * input_layer_size)];
         }
 
-        activation_calculation(AI, input); 
-        guess  = guess_label(AI);
-        if (guess == AI.label){
+        // Forward pass to compute activations
+        activation_calculation(AI, input);
+
+        // Determine predicted label
+        guess = guess_label(AI);
+
+        // Count correct predictions
+        if (guess == AI.label) {
             number_of_correct_guesses++;
         }
-    }
-    float percentage_of_correct_guesses = number_of_correct_guesses/test_dataset_size; 
-    cout<<"percentage of correct guesses :"<< percentage_of_correct_guesses<< "/n";
 
+        sample++;
+    }
+
+    // Compute and print overall accuracy
+    float percentage_of_correct_guesses =
+        static_cast<float>(number_of_correct_guesses) / test_dataset_size;
+    cout << "Percentage of correct guesses: "
+         << percentage_of_correct_guesses << "\n";
 }
+
 
 
 
