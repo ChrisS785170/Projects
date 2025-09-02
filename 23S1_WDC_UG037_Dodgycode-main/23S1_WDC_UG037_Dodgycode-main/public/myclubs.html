@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>My Clubs</title>
+        <meta charset="UTF-8">
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+        <script src="javascripts/vue.js" defer></script>
+        <script src="javascripts/navbar.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+        <link rel="stylesheet" href="stylesheets/style.css">
+    </head>
+    <body>
+        <div id="app">
+            <navigation-bar></navigation-bar>
+            <div class="findaclub-top">
+                <h1>My Clubs - What's Happening</h1>
+            </div>
+            <hr class="line-break">
+            <div class="club-page">
+                <div class="club-container">
+                    <div class="club-updates">
+                        <h2>Updates</h2>
+                        <div v-for="update in myClubsUpdates" :key="update.update_id" class="update">
+                            <h3>{{ update.content }}</h3>
+                            <p>{{ new Date(update.timestamp).toLocaleString() }}</p>
+                        </div>
+                    </div>
+                    <div class="club-events">
+                        <h2>Events</h2>
+                        <div v-for="event in myClubsEvents" :key="event.event_id" class="event">
+                            <h3>{{ event.name }}</h3>
+                            <p>{{ event.description }}</p>
+                            <p>{{new Date(event.event_timestamp).toLocaleString() }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer>
+            ©2023 DODGYCODE LTD. All Rights Reserved.
+            <br>
+            <br>
+            <div class="footer-links">
+                <a href="#">Terms of Service &nbsp; &#x2022; &nbsp; </a>
+                <a href="#">Privacy Policy &nbsp; &#x2022; &nbsp; </a>
+                <a href="#">Help and Support &nbsp; &nbsp; </a>
+                <a href="https://www.instagram.com/?__coig_restricted=1" class="fab fa-facebook social-icon">&nbsp; </a>
+                <a href="https://www.facebook.com/" class="fab fa-instagram social-icon">&nbsp; </a>
+                <a href="https://support.google.com" class="fab fa-google social-icon">&nbsp; </a>
+            </div>
+        </footer>
+    </body>
+</html>

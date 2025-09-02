@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Club</title>
+        <meta charset="UTF-8">
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+        <script src="javascripts/vue.js" defer></script>
+        <script src="javascripts/navbar.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+        <link rel="stylesheet" href="stylesheets/style.css">
+    </head>
+    <body>
+        <div id="app">
+            <navigation-bar></navigation-bar>
+            <h1>{{ selectedClub.name }}</h1>
+            <h3>{{ selectedClub.description }}</h3>
+            <button type="button" v-if="!userIsMember" class="joinClub" @click="joinClub">Join Club</button>
+            <button type="button" v-if="userIsMember" class="leaveClub" @click="leaveClub">Leave Club</button>
+            <div class="club-page">
+                <div class="club-container">
+                    <div class="club-updates">
+                        <h2>{{ selectedClub.name }} Updates</h2>
+                        <div v-for="update in selectedClub.updates" :key="update.update_id" class="update">
+                            <h3>{{ update.content }}</h3>
+                            <p>{{ new Date(update.timestamp).toLocaleString() }}</p>
+                        </div>
+                    </div>
+                    <div class="club-events">
+                        <h2>{{ selectedClub.name }} Events</h2>
+                        <div v-for="event in selectedClub.events" :key="event.event_id" class="event">
+                            <h3>{{ event.name }}</h3>
+                            <p>{{ event.description }}</p>
+                            <p>{{new Date(event.event_timestamp).toLocaleString() }}</p>
+                            <button type="button" @click="rsvpToEvent(event)">Toggle RSVP</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="club-page">
+                <div class="create-update">
+                <h2>Create Update</h2>
+                <form @submit.prevent="createUpdate">
+                    <label for="updateContent">Update content:</label>
+                    <textarea id="updateContent" v-model="newUpdate.content" required></textarea>
+                    <input type="submit" value="Post Update">
+                </form>
+                </div>
+                <div class="create-event">
+                <h2>Create Event</h2>
+                <form @submit.prevent="createEvent">
+                    <label for="eventName">Event name:</label>
+                    <input id="eventName" type="text" v-model="newEvent.name" required>
+
+                    <label for="eventDescription">Event description:</label>
+                    <textarea id="eventDescription" v-model="newEvent.description" required></textarea>
+
+                    <label for="eventTimestamp">Date of event:</label>
+                    <input id="eventTimestamp" type="datetime-local" v-model="newEvent.event_timestamp" required>
+
+                    <input type="submit" value="Create Event">
+                </form>
+                </div>
+            </div>
+            <div class="club-section">
+                <div class="club-members-and-rsvps">
+                  <h2 class="club-h2">Club Members</h2>
+                  <ul class="club-list">
+                    <li v-for="member in clubMembers" :key="member.user_id">{{ member.firstname }} {{ member.lastname}} ({{ member.username }})</li>
+                  </ul>
+                </div>
+                <div class="club-members-and-rsvps">
+                  <h2 class="club-h2">Event RSVPs</h2>
+                  <ul class="club-list">
+                    <li v-for="rsvp in rsvps" :key="`${rsvp.username}-${rsvp.eventName}`" class="rsvp">{{ rsvp.firstname }} {{ rsvp.lastname}} has RSVPd to: {{ rsvp.eventName }}</li>
+                  </ul>
+                </div>
+            </div>
+        </div>
+        <br>
+        <br>
+        <footer>
+            ©2023 DODGYCODE LTD. All Rights Reserved.
+            <br>
+            <br>
+            <div class="footer-links">
+                <a href="#">Terms of Service &nbsp; &#x2022; &nbsp; </a>
+                <a href="#">Privacy Policy &nbsp; &#x2022; &nbsp; </a>
+                <a href="#">Help and Support &nbsp; &nbsp; </a>
+                <a href="https://www.instagram.com/?__coig_restricted=1" class="fab fa-facebook social-icon">&nbsp; </a>
+                <a href="https://www.facebook.com/" class="fab fa-instagram social-icon">&nbsp; </a>
+                <a href="https://support.google.com" class="fab fa-google social-icon">&nbsp; </a>
+            </div>
+        </footer>
+    </body>
+</html>
