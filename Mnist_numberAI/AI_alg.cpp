@@ -659,8 +659,9 @@ int guess_label(Model &AI) {
 
 
 
+
 void trainAI() {
-    /**
+    /*
     * Train and evaluate a simple feedforward neural network on MNIST.
     *
     * This function initializes the network, loads the dataset, runs training
