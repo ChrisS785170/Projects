@@ -1,0 +1,33 @@
+# MNIST Neural Network (from Scratch in C++)
+
+This project implements a feedforward neural network trained with **backpropagation**, written entirely in C++ without the use of external machine learning libraries. The network is trained on the **MNIST dataset** of handwritten digits and evaluated on the test set.  
+
+Currently, the model achieves **~77% accuracy**, which is the plateau for the default architecture and hyperparameters used.  
+
+
+## Features
+- Fully implemented **forward pass** and **backpropagation** in C++  
+- Uses **stochastic gradient descent (SGD)** for training  
+- Includes basic **He initialization** for weights  
+- Reads the standard MNIST dataset (`ubyte` format)  
+- Outputs model accuracy on the test set  
+- No ML frameworks required — all computations are coded manually  
+
+
+## Project Structure
+Mnist_input_translator.cpp #converts ubyte files into vector<float>
+AI_alg.cpp #intilises, trains and tests nueral network
+main.cpp # wrapper file runs the whole process
+Mnist_data # holds the datasets used to train and test the nueral network
+
+## Requirements
+- **C++17 or later**  
+- **g++** or any modern C++ compiler 
+
+## Building
+From the project root directory:  
+g++ -std=c++17 -O2 main.cpp -o mnist-classifier
+./mnist-classifier
+
+
+
