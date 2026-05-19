@@ -1,0 +1,312 @@
+This is the recreation of my Nutrition app using my industry standard coding practices. 
+The app calculates the user's daily nutrient needs based on their age, weight, height, and activity level. It also provides a breakdown of macronutrients (carbohydrates, proteins, and fats) based on the calculated caloric needs. The app is designed to be user-friendly and visually appealing, with a clean and modern interface.
+
+
+
+# 1. Core Product Features 
+
+
+## Authentication & Accounts
+
+* User registration/login
+* Password hashing
+* Session management or JWT auth
+* Password reset
+* Email verification
+* Profile settings
+* Guest mode (optional)
+
+Recommended:
+
+* OAuth login (Google/Apple)
+
+## Nutrition Tracking
+
+* Search foods
+* Add foods to meals
+* Track:
+
+  * calories
+  * protein
+  * carbs
+  * fats
+* Serving size adjustments
+* Daily nutrition totals
+* Meal categories:
+
+  * breakfast
+  * lunch
+  * dinner
+  * snacks
+
+## Food Database
+
+* Structured food records
+* Branded + generic foods
+* Nutrition per serving
+* Search indexing/tokenization
+* Synonym handling
+* Pagination
+
+## Daily Logging System
+
+* Save food logs by date
+* Edit/delete entries
+* Historical tracking
+* Calendar/day navigation
+
+## Goals
+
+* Calorie target
+* Macro targets
+* Weight goal
+* Maintenance/bulk/cut presets
+
+## Dashboard
+
+* Daily macro progress
+* Remaining calories
+* Weight trends
+* Streaks/history
+
+---
+
+# 2. Advanced Features 
+
+## Smart Search
+
+* Debounced search
+* Ranked search results
+* Fuzzy matching
+* Typo tolerance
+* Recent foods
+* Frequent foods
+
+## Barcode Scanning
+
+* UPC/EAN scanning
+* Nutrition lookup
+
+## Custom Foods & Recipes
+
+* User-created foods
+* Recipe builder
+* Recipe nutrition calculation
+* Saved meals/templates
+
+## AI/NLP Features
+
+Examples:
+
+* “2 eggs and toast” natural language parsing
+* Meal photo analysis
+* AI nutrition suggestions
+* Smart recommendations
+
+## Health Metrics
+
+* Weight tracking
+* Body measurements
+* Water intake
+* Micronutrients
+* Fiber/sodium/sugar tracking
+
+## Fitness Integrations
+
+* Apple Health
+* Google Fit
+* Fitbit
+* Garmin
+
+## Notifications
+
+* Meal reminders
+* Goal reminders
+* Push notifications
+
+---
+
+# 3. Backend Architecture
+## API Layer
+
+You should have:
+
+* REST API or GraphQL
+* Proper route structure
+* Validation middleware
+* Error handling middleware
+
+Example:
+
+```txt
+/api/auth
+/api/foods
+/api/logs
+/api/users
+/api/goals
+```
+
+## Database Design
+
+Industry-standard expectations:
+
+* normalized schema
+* indexes
+* foreign keys
+* migrations
+
+Important tables:
+
+* users
+* foods
+* food_tokens
+* food_logs
+* meals
+* goals
+* recipes
+
+## Security
+
+* password hashing (bcrypt/argon2)
+* SQL injection protection
+* rate limiting
+* CORS setup
+* secure cookies/tokens
+* environment variables
+* input validation
+
+## Caching(Optional) 
+* Redis
+* cached search results
+* session caching
+
+## Scalability
+
+You don’t need microservices, but you should:
+
+* separate controllers/services/db logic
+* modularize code
+* use async properly
+* avoid duplicated logic
+
+---
+
+
+# 5. Cloud & DevOps
+
+## Hosting
+
+* frontend
+* backend
+* database
+
+Examples:
+
+* [AWS](https://aws.amazon.com?utm_source=chatgpt.com)
+* [Render](https://render.com?utm_source=chatgpt.com)
+* [Railway](https://railway.com?utm_source=chatgpt.com)
+* [Vercel](https://vercel.com?utm_source=chatgpt.com)
+
+## Domain & HTTPS
+
+* custom domain
+* SSL certificate
+
+## CI/CD
+
+Very strong resume signal.
+
+Examples:
+
+* GitHub Actions
+* automatic deploys
+* automated testing
+
+## Environment Management
+
+Separate:
+
+* development
+* staging
+* production
+
+---
+
+# 6. Testing
+
+## Backend Testing
+
+* API tests
+* integration tests
+* unit tests
+
+Tools:
+
+* Jest
+* Vitest
+* Cypress
+* Playwright
+
+---
+
+# 7. Performance
+
+Important for serious apps.
+
+## Backend
+
+* indexed queries
+* optimized search
+* pagination
+* compression
+
+## Frontend
+
+* lazy loading
+* code splitting
+* image optimization
+* minimized bundles
+
+---
+
+# 10. Documentation
+
+## Technical Documentation
+
+* README
+* setup guide
+* architecture overview
+* API docs
+
+## Portfolio Presentation
+
+should eventually have:
+
+* screenshots
+* demo video
+* deployed live version
+* GitHub repo
+* feature list
+
+---
+
+# Build Order
+
+TODO:
+
+1. Food database + search
+2. User auth
+3. Food logging
+4. Daily dashboard
+5. Goals/macros
+6. Responsive frontend polish
+7. Cloud deployment
+8. Testing
+9. CI/CD
+10. Advanced features (AI/barcode/etc.)
+
+
+
+
+
+

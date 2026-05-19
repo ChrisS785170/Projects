@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>nutritional_aid - Register</title>
+    <link rel="stylesheet" href="css/Signup.css" />
+  </head>
+    <body>
+        <div class="box">
+        <h1>Sign Up</h1>
+        <form>
+            <label>Email</label>
+            <input id="email" type="email" placeholder="Enter your email" required />
+            <label>Password</label>
+            <input id="password" type="password" placeholder="Enter your password" required />
+            <label>Gender</label>
+            <select id="gender">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+            </select>
+
+            <label>Age</label>
+            <input id="age" type="number" placeholder="Years" />
+
+            <label>Weight (kg)</label>
+            <input id="weight" type="number" placeholder="e.g. 70" />
+
+            <label>Height (cm)</label>
+            <input id="height" type="number" placeholder="e.g. 175" />
+
+            <label>Activity Level</label>
+            <select id="activity">
+                <option value="1.2">Sedentary</option>
+                <option value="1.375">Light exercise</option>
+                <option value="1.55">Moderate exercise</option>
+                <option value="1.725">Very active</option>
+                <option value="1.9">Extremely active</option>
+            </select>
+
+            <button type="submit">Calculate</button>
+        </form>
+
+        <div class="result" id="result"></div>
+        </div>
+        <script src="Signup.js"></script>
+    </body>
+</html>
