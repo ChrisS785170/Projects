@@ -1,0 +1,13 @@
+database/
+│
+├── migrations/ seperate files for table intialisation
+│   ├── 001_create_users.sql
+│   ├── 002_create_foods.sql
+│   ├── 003_create_meals.sql
+│   └── 004_create_tracking.sql
+│
+├── seeds/ manual data entry
+│   └── sample_foods.sql
+├── scripts/ populate database
+│   └── import_USDAfoods.js
+└── schema.sql

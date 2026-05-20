@@ -1,0 +1,49 @@
+backend/
+│
+├── src/
+│   │
+│   ├── config/ holds enviroment varibles and db 
+│   │   ├── db.js
+│   │   ├── env.js
+│   │
+│   ├── modules/ holds request pipeline
+│   │   │
+│   │   ├── auth/
+│   │   │
+│   │   │
+│   │   ├── users/
+│   │   │
+│   │   │
+│   │   ├── foods/
+│   │   │
+│   │   │
+│   │   ├── meals/
+│   │   ├── tracking/
+│   │   ├── goals/
+│   │   ├── analytics/
+│   │   └── recommendations/
+│   │
+│   ├── middleware/
+│   │   ├── auth.js
+│   │   ├── errorHandler.js
+│   │   ├── rateLimiter.js
+│   │   └── validation.js
+│   │
+│   ├── helper/
+│   │   ├── logger.js
+│   │   ├── pagination.js
+│   │   ├── tokenizer.js
+│   │   └── nutritionMath.js
+│   │
+│   ├── jobs/
+│   │   ├── recalculateDailyNutrition.js
+│   │   ├── syncUSDAFoods.js
+│   │   └── cleanupOldTokens.js
+│   │
+│   ├── app.js
+│   └── server.js
+│
+├── tests/
+├── package.json
+├── Dockerfile
+└── .env
