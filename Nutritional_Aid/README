@@ -308,7 +308,14 @@ TODO:
 
 Food datase + search:
   USDA raw food data 
-  https://openfoodfacts.github.io/openfoodfacts-server/api/
+  open food facts data
+
+  create import foodfacts.js
+    this will populate local database with the open source foodfacts
+  
+  (depending if foodfacts have raw food or not)
+  import USDAraw.js
+    will populate database with raw foods
 
 
 
