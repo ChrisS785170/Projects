@@ -6,7 +6,7 @@ import tokenise from "./tokenise.js";
 
 // This function handles the foodfacts data, preparing it for insertion into the database. 
 // It takes in the raw food data and returns the cleaned food data.
-function clean_food_facts(raw_foods){
+export function clean_raw_food_facts(raw_foods){
 
     const cleanedFoods = [];
 

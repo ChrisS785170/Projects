@@ -1,6 +1,8 @@
 import zlib from "zlib";
 import fs from "fs";
 import readline from "readline";
+import clean_raw_food_facts from "../Helpers/clean_raw_food_facts.js";
+import { bulk_insert_foods } from "../repositories/food_repository.js";
 
 
 const PATH = '../seeds/openfoodfacts-products.jsonl.gz'
@@ -29,7 +31,8 @@ rl.on('line', (line) => {
     if (batch.length >= batchSize) {
         rl.pause(); // Pause the readline interface to process the batch
       // Process the batch
-        console.log(batch); // this will be piped into a cleaning function, then piped into a db function
+        const cleanedBatch = clean_raw_food_facts(batch);
+        await bulk_insert_foods(cleanedBatch);
         batch = [];
         rl.resume(); // Resume the readline interface to continue reading lines
     }
@@ -40,9 +43,10 @@ rl.on('line', (line) => {
 
     if (batch.length > 0) {
         // Process any remaining items in the batch
-        console.log(batch); // this will be piped into a cleaning function, then piped into a db function
+        const cleanedBatch = clean_raw_food_facts(batch);
+        await bulk_insert_foods(cleanedBatch);
     }
 
 rl.on('close', () => {
-  console.log('Finished processing the file.');
+  console.log('Finished processing the Food Facts Database .');
 });

@@ -1,4 +1,6 @@
 import fs from 'fs';
+import { clean_raw_USDA } from '../Helpers/clean_raw_USDA.js';
+import { bulk_insert_foods } from '../repositories/food_repository.js';
 
 
 
@@ -9,4 +11,7 @@ const data = JSON.parse(
 const foods = data.FoundationFoods;
 
 // ProcessFoodBatch(foods); // this will be piped into a cleaning function, then piped into a db function
-console.log(foods.length);
+const cleanedFoods = clean_raw_USDA(foods);
+
+await bulk_insert_foods(cleanedFoods)
+console.log("Finished inserting USDA foods into database");
