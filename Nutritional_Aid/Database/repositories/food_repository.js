@@ -103,3 +103,18 @@ export async function delete_food(id) {
 
     await pool.query(sql, [id]);
 }
+//needs polish need it to return best 5 matches where this only returns foods that match exactly i think
+export async function search_foods_by_tokens(tokens) {
+    const placeholders = tokens.map(() => '?').join(',');
+    const sql = `
+        SELECT * FROM foods
+        WHERE id IN (
+            SELECT foodId FROM food_tokens
+            WHERE token IN (${placeholders})
+            GROUP BY foodId
+            HAVING COUNT(DISTINCT token) = ?
+        )
+    `;
+    const [rows] = await pool.query(sql, [...tokens, tokens.length]);
+    return rows;
+}

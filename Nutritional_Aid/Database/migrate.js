@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
-import { pool } from "./connection.js";
+import { pool } from "./connections.js";
 
-const MIGRATIONS_DIR = "./database/migrations";
+const MIGRATIONS_DIR = "./migrations";
 
 // Get all SQL files sorted
 const files = fs
@@ -15,11 +15,13 @@ async function runMigrations() {
 
     for (const file of files) {
         const filePath = path.join(MIGRATIONS_DIR, file);
+        //take the contents from the file
         const sql = fs.readFileSync(filePath, "utf8");
 
         console.log(`Running: ${file}`);
 
         try {
+            // execute the SQL we got from the file
             await pool.query(sql);
             console.log(`Success: ${file}`);
         } catch (err) {
