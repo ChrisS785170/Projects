@@ -1,0 +1,12 @@
+{
+  "name": "nutritional_aid",
+  "version": "1.0.0",
+  "description": "This is the recreation of my Nutrition app using my industry standard coding practices.  The app calculates the user's daily nutrient needs based on their age, weight, height, and activity level. It also provides a breakdown of macronutrients (carbohydrates, proteins, and fats) based on the calculated caloric needs. The app is designed to be user-friendly and visually appealing, with a clean and modern interface.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No Tests Yet\" && exit 0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
