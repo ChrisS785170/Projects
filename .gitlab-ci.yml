@@ -1,0 +1,14 @@
+
+stages:
+  -test
+
+nutrition_tests:
+  stage: test
+  image: node:20
+  script:
+    - cd Nutritional_Aid
+    - npm install
+    - npm test
+  rules:
+    - changes:
+        - Nutritional_Aid/**/*
